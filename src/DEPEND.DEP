@@ -1,0 +1,11 @@
+agwpe_if.o: agwpe_if.c fortify.h ufortify.h ringbuf.h agwhdr.h \
+ agwpe_if.h agwsubs.h
+agwsubs.o: agwsubs.c fortify.h ufortify.h ringbuf.h agwhdr.h \
+ agwpe_if.h agwsubs.h tn_srv.h
+cmd.o: cmd.c fortify.h ufortify.h agwsubs.h agwhdr.h ringbuf.h \
+ tn_srv.h cmd.h
+ringbuf.o: ringbuf.c fortify.h ufortify.h ringbuf.h
+test.o: test.c fortify.h ufortify.h agwhdr.h agwpe_if.h ringbuf.h \
+ agwsubs.h tn_srv.h cmd.h
+tn_srv.o: tn_srv.c fortify.h ufortify.h ringbuf.h tn_srv.h agwsubs.h \
+ agwhdr.h

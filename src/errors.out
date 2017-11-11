@@ -1,0 +1,40 @@
+make: Nothing to be done for `Makefile.lnx'.
+gcc -g   -I../include -Wall -DUSE_FORTIFY	-DTN_SRV -MM *.c > depend.dep
+In file included from /usr/include/bits/posix1_lim.h:126,
+                 from /usr/include/limits.h:30,
+                 from /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h:117,
+                 from /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/syslimits.h:7,
+                 from /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h:11,
+                 from /usr/include/netinet/in.h:23,
+                 from agwpe_if.c:14:
+/usr/include/bits/local_lim.h:27: warning: No include path in which to find linux/limits.h
+In file included from /usr/include/netinet/in.h:27,
+                 from agwpe_if.c:14:
+/usr/include/bits/socket.h:295: warning: No include path in which to find asm/socket.h
+agwsubs.c:14: warning: No include path in which to find pc.h
+agwsubs.c:15: warning: No include path in which to find conio.h
+fortify.c:145: Invalid token in expression
+In file included from /usr/include/bits/posix1_lim.h:126,
+                 from /usr/include/limits.h:30,
+                 from /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h:117,
+                 from /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/syslimits.h:7,
+                 from /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h:11,
+                 from /usr/include/netinet/in.h:23,
+                 from test.c:23:
+/usr/include/bits/local_lim.h:27: warning: No include path in which to find linux/limits.h
+In file included from /usr/include/netinet/in.h:27,
+                 from test.c:23:
+/usr/include/bits/socket.h:295: warning: No include path in which to find asm/socket.h
+test.c:28: warning: No include path in which to find lsck/copyrite.h
+In file included from /usr/include/bits/posix1_lim.h:126,
+                 from /usr/include/limits.h:30,
+                 from /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h:117,
+                 from /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/syslimits.h:7,
+                 from /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h:11,
+                 from /usr/include/netinet/in.h:23,
+                 from tn_srv.c:14:
+/usr/include/bits/local_lim.h:27: warning: No include path in which to find linux/limits.h
+In file included from /usr/include/netinet/in.h:27,
+                 from tn_srv.c:14:
+/usr/include/bits/socket.h:295: warning: No include path in which to find asm/socket.h
+make: *** [dep] Error 1

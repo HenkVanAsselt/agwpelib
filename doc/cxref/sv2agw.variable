@@ -1,0 +1,33 @@
+tn_srv.c telnet_sock 1 check_conn_request get_telnet_data get_telnet_sock send_telnet_data
+tn_srv.c listen_sock 1 check_conn_request get_listen_sock telnet_srv_init
+tn_srv.c agwpe_status 4 check_conn_request get_telnet_data send_telnet_data telnet_srv_init tn_close tn_close_all tn_printf
+test.c cmd 2
+test.c data 2
+test.c agwpe_version 4 main
+test.c agwpe_portinfo 4 main
+test.c tn_ringbuf 1 main
+test.c telnet_sock 2 main
+test.c agwpe_status 4 main
+test.c mycall 4 main
+test.c tocall 4 main
+cmd.c agwpe_version 4 exec_cmd
+cmd.c agwpe_portinfo 4 exec_cmd
+cmd.c mycall 4
+cmd.c tocall 4 exec_cmd
+cmd.c agwpe_status 4 disp_prompt exec_cmd %output
+cmd.c cmd 1 get_cmd
+cmd.c ptr 1 get_cmd
+agwsubs.c agwpe_version 2 agwpe_init %store_version
+agwsubs.c agwpe_portinfo 2 agwpe_init agwpe_process
+agwsubs.c agwpe_status 2 agwpe_init agwpe_process get_con_data
+agwsubs.c mycall 2 agwpe_connect agwpe_disconnect agwpe_send_data
+agwsubs.c tocall 2
+agwsubs.c cmdbuffer 1 $
+agwsubs.c cmd 1 agwpe_connect agwpe_disconnect %agwpe_get_portinfo agwpe_get_ver agwpe_heard agwpe_monitor agwpe_register agwpe_send_data agwpe_unregister
+agwsubs.c databuffer 1 $
+agwsubs.c data 1 agwpe_process
+agwsubs.c ringbuf 1 agwpe_init agwpe_process
+agwpe_if.c port 1 agw_tcp_init
+agwpe_if.c host 1 agw_tcp_init
+agwpe_if.c agwpe_sock 1 agw_tcp_close agw_tcp_init agw_tcp_send get_tcp_data
+agwpe_if.c agwpe_status 4 agw_tcp_send agwdata_get

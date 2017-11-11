@@ -1,0 +1,16 @@
+ufortify.h
+tn_srv.h %ringbuf.h
+ringbuf.h d:/djgpp/include/stdio.h d:/djgpp/include/stdlib.h
+fortify.h d:/djgpp/include/stdlib.h d:/djgpp/include/string.h %ufortify.h
+cmd.h %ringbuf.h
+chksum.h
+agwsubs.h %agwhdr.h
+agwpe_if.h %ringbuf.h %agwhdr.h
+agwhdr.h
+tn_srv.c d:/djgpp/include/stdio.h d:/djgpp/include/stdlib.h d:/djgpp/include/netinet/in.h d:/djgpp/include/sys/socket.h d:/djgpp/include/netdb.h d:/djgpp/include/arpa/inet.h d:/djgpp/include/unistd.h d:/djgpp/include/stdarg.h d:/djgpp/include/lsck/lsck.h d:/djgpp/include/fcntl.h %fortify.h %ringbuf.h %tn_srv.h %agwsubs.h
+test.c d:/djgpp/include/stdio.h d:/djgpp/include/stdlib.h d:/djgpp/include/string.h d:/djgpp/include/netinet/in.h d:/djgpp/include/sys/socket.h d:/djgpp/include/netdb.h d:/djgpp/include/arpa/inet.h d:/djgpp/include/unistd.h d:/djgpp/include/lsck/copyrite.h d:/djgpp/include/fcntl.h %fortify.h %agwhdr.h %agwpe_if.h %agwsubs.h %tn_srv.h %cmd.h
+ringbuf.c d:/djgpp/include/stdio.h d:/djgpp/include/stdlib.h %fortify.h %ringbuf.h
+fortify.c d:/djgpp/include/stdio.h d:/djgpp/include/stdlib.h d:/djgpp/include/string.h d:/djgpp/include/assert.h d:/djgpp/include/math.h d:/djgpp/include/ctype.h d:/djgpp/include/time.h %agwhdr.h %fortify.h %chksum.h
+cmd.c d:/djgpp/include/stdio.h d:/djgpp/include/stdlib.h d:/djgpp/include/string.h d:/djgpp/include/stdarg.h %fortify.h %agwsubs.h %ringbuf.h %tn_srv.h %cmd.h
+agwsubs.c d:/djgpp/include/stdio.h d:/djgpp/include/stdlib.h d:/djgpp/include/strings.h d:/djgpp/include/ctype.h d:/djgpp/include/pc.h d:/djgpp/include/conio.h %fortify.h %ringbuf.h %agwhdr.h %agwpe_if.h %agwsubs.h %tn_srv.h
+agwpe_if.c d:/djgpp/include/stdio.h d:/djgpp/include/stdlib.h d:/djgpp/include/netinet/in.h d:/djgpp/include/sys/socket.h d:/djgpp/include/netdb.h d:/djgpp/include/arpa/inet.h d:/djgpp/include/unistd.h d:/djgpp/include/lsck/lsck.h d:/djgpp/include/fcntl.h %fortify.h %ringbuf.h %agwhdr.h %agwpe_if.h %agwsubs.h

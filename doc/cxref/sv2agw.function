@@ -1,0 +1,47 @@
+tn_srv.c check_conn_request 2 accept inet_ntoa perror printf %tn_printf
+tn_srv.c get_listen_sock 2
+tn_srv.c get_telnet_data 2 fcntl printf recv ringbuf_put %tn_printf
+tn_srv.c get_telnet_sock 2
+tn_srv.c send_telnet_data 2 exit perror send
+tn_srv.c telnet_srv_init 2 atoi bind exit fcntl htons listen memset perror printf socket
+tn_srv.c tn_close 2 close fflush
+tn_srv.c tn_close_all 2 %get_listen_sock %get_telnet_sock %tn_close
+tn_srv.c tn_printf 2 __builtin_next_arg %send_telnet_data strlen vsprintf
+test.c main 2 __lsck_get_version agw_tcp_close agwpe_init agwpe_process agwpe_register agwpe_send_data agwpe_unregister check_conn_request disp_prompt exec_cmd exit get_cmd get_con_data get_telnet_data get_telnet_sock printf ringbuf_create strcpy strlen telnet_srv_init tn_close_all
+ringbuf.c ringbuf_cnt 2
+ringbuf.c ringbuf_create 2 calloc exit perror
+ringbuf.c ringbuf_delete 2 exit free perror
+ringbuf.c ringbuf_get 2
+ringbuf.c ringbuf_peek 2
+ringbuf.c ringbuf_put 2 perror
+cmd.c disp_prompt 2 printf tn_printf
+cmd.c exec_cmd 2 agwpe_connect agwpe_disconnect agwpe_heard exit %output %print_usage printf sscanf strstr strupr tn_close_all
+cmd.c get_cmd 2 ringbuf_get %terminator
+cmd.c output 1 __builtin_next_arg tn_printf vprintf vsprintf
+cmd.c print_usage 2 %output
+cmd.c terminator 1 ringbuf_get ringbuf_peek
+agwsubs.c agwhdr_cnt 1
+agwsubs.c agwhdr_get 2 agwhdr_available exit perror ringbuf_cnt ringbuf_get
+agwsubs.c agwhdr_type 1
+agwsubs.c agwpe_connect 2 agw_tcp_send memset printf strcpy
+agwsubs.c agwpe_datalen 2 atoi strstr
+agwsubs.c agwpe_disconnect 2 agw_tcp_send memset printf strcpy
+agwsubs.c agwpe_get_portinfo 1 agw_tcp_send memset
+agwsubs.c agwpe_get_ver 2 agw_tcp_send memset
+agwsubs.c agwpe_heard 2 agw_tcp_send memset
+agwsubs.c agwpe_init 2 agw_tcp_init %agwpe_get_portinfo %agwpe_get_ver %agwpe_process atexit ringbuf_create &agw_tcp_close
+agwsubs.c agwpe_monitor 2 agw_tcp_send memset
+agwsubs.c agwpe_printdata 2 printf
+agwsubs.c agwpe_printhdr 2 printf
+agwsubs.c agwpe_process 2 agwdata_get agwhdr_available %agwhdr_cnt %agwhdr_get %agwhdr_type %agwpe_datalen %agwpe_printdata %agwpe_printhdr get_tcp_data memcpy memset printf %store_version strcpy tn_printf
+agwsubs.c agwpe_register 2 agw_tcp_send memset strcpy
+agwsubs.c agwpe_send_data 2 agw_tcp_send memset strcpy strlen
+agwsubs.c agwpe_unregister 2 agw_tcp_send memset strcpy
+agwsubs.c get_con_data 2 _conio_kbhit getch printf ringbuf_put tn_printf
+agwsubs.c store_version 1 sprintf
+agwpe_if.c agw_tcp_close 2 close
+agwpe_if.c agw_tcp_init 2 atoi connect exit free gethostbyname herror htons memset perror printf socket
+agwpe_if.c agw_tcp_send 2 exit perror printf send
+agwpe_if.c agwdata_get 2 perror printf ringbuf_cnt ringbuf_get
+agwpe_if.c agwhdr_available 2 ringbuf_cnt
+agwpe_if.c get_tcp_data 2 fcntl recv ringbuf_put

@@ -1,0 +1,134 @@
+This is ../doc/info/agwtcplib.info, produced by makeinfo version 4.0
+from agwtcplib.txi.
+
+   This info file describes the usage of PA3BTL's AGWPE tcpip interface
+
+   Copyright (C) 2000 Henk van Asselt, PA3BTL
+
+
+File: agwtcplib.info,  Node: Top,  Next: Introduction,  Prev: Top,  Up: Top
+
+   This document will describe my tcpip interface to SV2AGW's Packet
+Engine.
+
+* Menu:
+
+* Top::
+* Introduction::
+* Development::
+
+
+File: agwtcplib.info,  Node: Introduction,  Next: Development,  Prev: Top,  Up: Top
+
+Introduction
+************
+
+   This document will describe my tcpip interface to SV2AGW's Packet
+Engine.
+
+   This excellent piece of software and all information can be
+downloaded from his web site <http://www.raag.org/sv2agw>
+
+   I will not describe any functionality of this packet engine, but
+will concentrate on the tcpip interface.
+
+Description
+***********
+
+Basic setup
+===========
+
+   The agwpe tcp interface consists basically of the following:
+
+   The application can talk via the tcp handler to the AGW Packet
+Engine.  Responses from the AGW Packet Engine are stored by the tcp
+handler in a ringbuffer. The application must extract the AGWPE headers
+and following data from the ringbuffer.
+
+What has the application to do ?
+================================
+
+   The application should peform the following actions:
+
+   Call agwpe_int(host,port) to initialize the tcp interface.  - This
+function will setup the connection - Create a ringbuffer for incoming
+data - Get the AGWPE version number - Get the AGEPE port information -
+-																   _
+
+   Then the application has to register the callsign it will use with
+agwpe_register(callsign)
+
+   Then the application can do whatever it wants to do like starting
+the monitor function by calling agwpe_monitor()
+
+   The body of the interface is the function agwpe_process(). This
+function will check for incoming agwpe headers and data following these
+headers.
+
+What is currently implemented ?
+===============================
+
+   This process function is very basic at this moment. In fact it can
+only perform the above mentioned functions and print monitor data on the
+standard output.
+
+   Good luck,
+
+   Henk van Asselt, PA3BTL -  2000-08-04
+
+
+File: agwtcplib.info,  Node: Development,  Prev: Introduction,  Up: Top
+
+Development Environment
+***********************
+
+DJGPP
+=====
+
+   This interace is written in the DJGPP V2 environment and compiled
+with the GNU C compiler. For all information and downloads, see the
+following sites: <http://www.delorie.com>.  <http://www.gnu.org>
+
+   The following was downloaded and installed in my environment:
+
+   acnf213b.zip	acnf213d.zip	alleg312.zip
+bc103b.zip		bc103d.zip		bnu281d.zip
+bnu2951b.zip	bsh203b.zip		bsh203d.zip
+cpio242b.zip	cpio242d.zip	dfe9532b.zip
+dif271d.zip		dif272b.zip		djdev203.zip
+faq230b.zip		fil316b.zip		fil316d.zip
+find41b.zip		find41d.zip		gcc2952b.zip
+gdb416d.zip		gdb418b.zip		gpp2952b.zip
+grx23.zip		grx23fnt.zip	gwk303d.zip
+gwk304b.zip		lclint-2.5m-w32.zip
+lgp2952b.zip	ls074b4b.zip	ls074b4d.zip
+ls074b4s.zip	m4-14b.zip		m4-14d.zip
+mak377d.zip		mak379b.zip		pdc22.zip
+perl552b.zip	rhide14b.zip	sed302b.zip
+sed302s.zip		shl112b.zip		shl112d.zip
+tcplib-dj200.1.tar.gz			tv1010s.zip
+txi40b.zip		txt20b.zip		txt122d.zip
+
+GNU standards
+=============
+
+   I am trying to follow all GNU standards as described on the the web
+page <http://www.delorie.com/gnu/docs/GNU/standard_toc.html>
+
+CXREF
+=====
+
+   The source code is documented and cross-referenced with the exellent
+cxref utility of Andrew M. Bishop on  <http://www.gedanken.demon.co.uk/>
+I got CXREF only to work in the CYGWIN environment, so I call it from
+there.
+
+* Menu:
+
+
+Tag Table:
+Node: Top210
+Node: Introduction418
+Node: Development2208
+
+End Tag Table

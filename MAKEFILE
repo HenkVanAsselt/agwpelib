@@ -1,0 +1,13 @@
+#
+# Makefile for libsocket 0.7.4's source distribution
+#
+# Copyright 1997, 1998 by Indrek Mandre
+# Copyright 1997-2000 by Richard Dawe
+#
+
+include Makefile.cfg
+
+default:
+	@$(CAT) Targets.src
+
+

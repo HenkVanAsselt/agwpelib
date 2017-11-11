@@ -1,0 +1,4 @@
+ringbuf.h RINGBUF struct _RINGBUF_ RINGBUF
+fortify.h Fortify_NewHandlerFunc void (*Fortify_NewHandlerFunc)(void)
+fortify.h Fortify_OutputFuncPtr void (*Fortify_OutputFuncPtr)(const char*)
+agwhdr.h AGWPE_HDR struct _agwpe_hdr_ AGWPE_HDR

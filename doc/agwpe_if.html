@@ -1,0 +1,225 @@
+<html>
+<head>
+  <title>agwpe_if.c</title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<pre>
+<font color="#444444">/***************************************************************
+$Header: /djgpp/sv2agw/agwpe_if.c 1.0 Fri 07-21-2000 3:53:22 pm $
+
+FILE: agwpe_if.c
+DESC: Interface between libsock and AGWPE/TCP
+HIST: 20000712 V0.1
+****************************************************************/</font>
+
+<font color="#444444">/*+ Normal includes  +*/</font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;stdio.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;stdlib.h&gt;</font></strong></font>
+
+<font color="#444444">/*+ Includes for network functionality  +*/</font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;netinet/in.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;sys/socket.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;netdb.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;arpa/inet.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;unistd.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;fcntl.h&gt;</font></strong></font>
+
+<font color="#444444">/*+ Include own header files  +*/</font>
+<font color="0000ff"><strong>#include <font color="#008000">&quot;ringbuf.h&quot;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&quot;agwhdr.h&quot;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&quot;agwpe_if.h&quot;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&quot;agwsubs.h&quot;</font></strong></font>
+
+
+<strong>static</strong> <strong>unsigned</strong> <strong>short</strong> <font color="#2040a0">port</font><font color="4444FF">;</font>		 <font color="#444444">/*+ TCP IP portnumber to use  +*/</font>
+<strong>static</strong> <strong>unsigned</strong> <strong>long</strong> <strong>int</strong> <font color="#2040a0">host</font><font color="4444FF">;</font>	 <font color="#444444">/*+ Host address  +*/</font>
+<strong>static</strong> <strong>int</strong> <font color="#2040a0">sock</font><font color="4444FF">;</font>				 <font color="#444444">/*+ Socket number which will be assigned  +*/</font>
+
+<font color="#444444">/*+ Local prototypes  +*/</font>
+
+<font color="#444444">/*+ Initialize tcp sockets +*/</font>
+<strong>static</strong> <strong>void</strong> <font color="#2040a0">init_sockets</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+<font color="#444444">/*+++ Get the number of databytes which will follow the header  +*/</font>
+<strong>unsigned</strong> <strong>long</strong> <font color="#2040a0">agwhdr_cipnt</font><font color="4444FF">(</font><font color="#2040a0">AGWPE_HDR</font> <font color="4444FF">*</font><font color="#2040a0">hdr</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+
+<font color="#444444">/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DESC: setup the tcp connection to AGWPE							   
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/</font>
+<strong>int</strong> 
+<font color="#2040a0">agw_tcp_init</font><font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">address</font>,    	<font color="#444444">/*+ Host name or IP address to use +*/</font>
+             <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">p</font><font color="4444FF">)</font>			<font color="#444444">/*+ Port number to use +*/</font>
+<font color="#444444">/*+ Returns 1 on success, exits on failure +*/</font>
+<font color="4444FF"><strong>{</strong></font>
+  <strong>struct</strong> <font color="#2040a0">hostent</font> <font color="4444FF">*</font><font color="#2040a0">hostlookup</font><font color="4444FF">;</font>
+
+  <font color="#444444">/* Host name lookup */</font>
+  <font color="#2040a0">port</font> <font color="4444FF">=</font> <font color="4444FF">(</font><strong>unsigned</strong> <strong>short</strong><font color="4444FF">)</font> <font color="#2040a0">atoi</font> <font color="4444FF">(</font> <font color="#2040a0">p</font> <font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">hostlookup</font> <font color="4444FF">=</font> <font color="#2040a0">gethostbyname</font><font color="4444FF">(</font><font color="#2040a0">address</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">hostlookup</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">NULL</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">herror</font><font color="4444FF">(</font><font color="#008000">&quot;agw_tcp_init()&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>        
+  <font color="4444FF"><strong>}</strong></font>
+  <font color="#2040a0">host</font> <font color="4444FF">=</font> <font color="4444FF">(</font> <font color="4444FF">(</font><strong>struct</strong> <font color="#2040a0">in_addr</font> <font color="4444FF">*</font><font color="4444FF">)</font> <font color="#2040a0">hostlookup</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">h_addr</font><font color="4444FF">)</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">s_addr</font><font color="4444FF">;</font>
+  <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">hostlookup</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <font color="#444444">/* Initialize sockets */</font>
+  <font color="#2040a0">init_sockets</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <strong>return</strong><font color="4444FF">(</font><font color="#FF0000">1</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#444444">/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Description: This function initializes the sockets
+
+History: From the oringal example is untoched, exectp that it has
+been placed in a seperate function.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/</font>
+<strong>static</strong> 
+<strong>void</strong> <font color="#2040a0">init_sockets</font> <font color="4444FF">(</font><strong>void</strong><font color="4444FF">)</font>
+<font color="4444FF"><strong>{</strong></font>
+  <strong>struct</strong> <font color="#2040a0">sockaddr_in</font> <font color="#2040a0">in</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">memset</font> <font color="4444FF">(</font> <font color="4444FF">&amp;</font><font color="#2040a0">in</font>, <font color="#FF0000">0</font>, <strong>sizeof</strong> <font color="4444FF">(</font> <strong>struct</strong> <font color="#2040a0">sockaddr_in</font> <font color="4444FF">)</font> <font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <strong>if</strong> <font color="4444FF">(</font> <font color="4444FF">(</font> <font color="#2040a0">sock</font> <font color="4444FF">=</font> <font color="#2040a0">socket</font> <font color="4444FF">(</font> <font color="#2040a0">AF_INET</font>, <font color="#2040a0">SOCK_STREAM</font>, <font color="#FF0000">0</font> <font color="4444FF">)</font> <font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="4444FF">-</font><font color="#FF0000">1</font> <font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">perror</font><font color="4444FF">(</font><font color="#008000">&quot;socket&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <font color="#2040a0">in</font>.<font color="#2040a0">sin_family</font> <font color="4444FF">=</font> <font color="#2040a0">AF_INET</font><font color="4444FF">;</font>
+  <font color="#2040a0">in</font>.<font color="#2040a0">sin_port</font> <font color="4444FF">=</font> <font color="#2040a0">htons</font> <font color="4444FF">(</font> <font color="#2040a0">port</font> <font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">in</font>.<font color="#2040a0">sin_addr</font>.<font color="#2040a0">s_addr</font> <font color="4444FF">=</font> <font color="#2040a0">host</font><font color="4444FF">;</font>
+
+  <strong>if</strong> <font color="4444FF">(</font> <font color="#2040a0">connect</font> <font color="4444FF">(</font> <font color="#2040a0">sock</font>, <font color="4444FF">(</font><strong>struct</strong> <font color="#2040a0">sockaddr</font> <font color="4444FF">*</font><font color="4444FF">)</font><font color="4444FF">&amp;</font><font color="#2040a0">in</font>, <strong>sizeof</strong> <font color="4444FF">(</font> <strong>struct</strong> <font color="#2040a0">sockaddr_in</font> <font color="4444FF">)</font> <font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="4444FF">-</font><font color="#FF0000">1</font> <font color="4444FF">)</font>
+    <font color="4444FF"><strong>{</strong></font>
+      <font color="#2040a0">perror</font> <font color="4444FF">(</font> <font color="#008000">&quot;connect&quot;</font> <font color="4444FF">)</font><font color="4444FF">;</font>
+      <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="4444FF"><strong>}</strong></font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#444444">/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Description: Close socket used for the connection to AGWPE
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/</font>
+<strong>void</strong> 
+<font color="#2040a0">agw_tcp_close</font><font color="4444FF">(</font><strong>void</strong><font color="4444FF">)</font>
+<font color="4444FF"><strong>{</strong></font>
+  <strong>static</strong> <strong>int</strong> <font color="#2040a0">first_time</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+
+  <font color="#444444">/*--- Check if this function is called fro the first time  */</font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">!</font><font color="#2040a0">first_time</font><font color="4444FF">)</font>
+    <strong>return</strong><font color="4444FF">;</font>
+
+  <font color="#444444">/*--- Close the socket and exit this program  ---*/</font>
+  <font color="4444FF">(</font><strong>void</strong><font color="4444FF">)</font> <font color="#2040a0">close</font> <font color="4444FF">(</font><font color="#2040a0">sock</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">first_time</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#444444">/*+++++++++++++++++++++++++++++++++++++++++++++++++++
+Send a command to the AGW Packet Engine over the tcpip socket.
+This version knows of sending the header only.
+
+Returns 1 on success,
+        exits on a failure.
+++++++++++++++++++++++++++++++++++++++++++++++++++*/</font>
+<strong>void</strong> 
+<font color="#2040a0">agw_tcp_send</font><font color="4444FF">(</font><font color="#2040a0">AGWPE_HDR</font> <font color="4444FF">*</font><font color="#2040a0">cmd</font>,	<font color="#444444">/*+ AGWPE header, containing the command +*/</font>
+             <font color="#2040a0">size_t</font> <font color="#2040a0">size</font><font color="4444FF">)</font>		<font color="#444444">/*+ Size of the data to send (inclusive header +*/</font>
+<font color="4444FF"><strong>{</strong></font>
+  <font color="#444444">/*--- Send command over the socket  ---*/</font>
+  <strong>if</strong> <font color="4444FF">(</font> <font color="#2040a0">send</font> <font color="4444FF">(</font> <font color="#2040a0">sock</font>, <font color="#2040a0">cmd</font>, <font color="#2040a0">size</font>, <font color="#FF0000">0</font> <font color="4444FF">)</font> <font color="4444FF">&lt;</font><font color="4444FF">=</font> <font color="#FF0000">0</font> <font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">perror</font> <font color="4444FF">(</font> <font color="#008000">&quot;agw_tcp_send()&quot;</font> <font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">exit</font> <font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#444444">/*+++++++++++++++++++++++++++++++++++++++++++++++++++
+Description: Get data from the socket and store it
+in the ring buffer. The socket number used is a global 
+variable.
+++++++++++++++++++++++++++++++++++++++++++++++++++*/</font>
+<strong>void</strong>
+<font color="#2040a0">get_tcp_data</font> <font color="4444FF">(</font><font color="#2040a0">RINGBUF</font> <font color="4444FF">*</font><font color="#2040a0">ringbuf</font><font color="4444FF">)</font>		<font color="#444444">/*+ Pointer to ringbuf +*/</font>
+<font color="4444FF"><strong>{</strong></font>
+<font color="0000ff"><strong>  #define BUFSIZE 1024 <font color="#444444">	/*+ This is a static size for now +*/</font></strong></font>
+  <font color="#2040a0">BYTE</font> <font color="#2040a0">buf</font><font color="4444FF">[</font><font color="#2040a0">BUFSIZE</font><font color="4444FF">]</font><font color="4444FF">;</font>    
+  <strong>int</strong> <font color="#2040a0">t</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>         
+  <strong>int</strong> <font color="#2040a0">i</font><font color="4444FF">;</font>
+  <font color="#2040a0">size_t</font> <font color="#2040a0">size</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">size_t</font><font color="4444FF">)</font><font color="4444FF">(</font><font color="#2040a0">BUFSIZE</font><font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <font color="#444444">/*@-unrecog@*/</font>	<font color="#444444">/*--- Suppress LCLINT warning message  */</font>
+
+  <font color="#444444">/*--- Only now set socket in nonblock mode  */</font>
+  <font color="4444FF">(</font><strong>void</strong><font color="4444FF">)</font> <font color="#2040a0">fcntl</font><font color="4444FF">(</font><font color="#2040a0">sock</font>,<font color="#2040a0">F_SETFL</font>,<font color="#2040a0">O_NONBLOCK</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <font color="#444444">/*@+matchanyintegral@*/</font>  <font color="#444444">/*--- Avoid LCLINT warning  */</font>
+  <strong>while</strong> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">t</font> <font color="4444FF">=</font> <font color="#2040a0">recv</font> <font color="4444FF">(</font> <font color="#2040a0">sock</font>, <font color="#2040a0">buf</font>, <font color="4444FF">(</font><font color="#2040a0">size_t</font><font color="4444FF">)</font> <font color="#2040a0">size</font>, <font color="#FF0000">0</font> <font color="4444FF">)</font><font color="4444FF">)</font> <font color="4444FF">&gt;</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">t</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+	  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">errno</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">EWOULDBLOCK</font><font color="4444FF">)</font> 
+	    <strong>continue</strong><font color="4444FF">;</font> 
+	  <strong>else</strong>
+	    <strong>break</strong><font color="4444FF">;</font>
+	<font color="4444FF"><strong>}</strong></font>
+    <font color="#2040a0">buf</font><font color="4444FF">[</font><font color="#2040a0">t</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#008000">'<font color="#77dd77">\0</font>'</font><font color="4444FF">;</font>
+    <font color="#444444">/*--- Store incoming data in own ring buffer  ---*/</font>
+    <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">=</font><font color="#FF0000">0</font> <font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">&lt;</font><font color="#2040a0">t</font> <font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+	  <font color="#2040a0">ringbuf_put</font><font color="4444FF">(</font><font color="#2040a0">ringbuf</font>,<font color="#2040a0">buf</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
+	<font color="4444FF"><strong>}</strong></font>
+  <font color="4444FF"><strong>}</strong></font>
+  <font color="#444444">/*@=matchanyintegral@*/</font>	<font color="#444444">/*--- Restore original LCLINT value */</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#444444">/*+++++++++++++++++++++++++++++++++++++++++++++++++++
+Description: This function checks if ther are enough
+databytes in the ringbuffer to contain a AGWPE header
+
+Returns: 0 if no header available,
+         1 if there is enough data to contain a header
+++++++++++++++++++++++++++++++++++++++++++++++++++*/</font>
+<strong>int</strong> 
+<font color="#2040a0">agwhdr_available</font><font color="4444FF">(</font><font color="#2040a0">RINGBUF</font> <font color="4444FF">*</font><font color="#2040a0">ringbuf</font><font color="4444FF">)</font>	<font color="#444444">/*+ Pointer to ringbuffer to use +*/</font>
+<font color="#444444">/*+ Returns 0 if no header was available, 1 if there is enough data
+in the buffer to contain a header +*/</font>
+<font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">ringbuf_cnt</font><font color="4444FF">(</font><font color="#2040a0">ringbuf</font><font color="4444FF">)</font> <font color="4444FF">&lt;</font> <strong>sizeof</strong><font color="4444FF">(</font><font color="#2040a0">AGWPE_HDR</font><font color="4444FF">)</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>return</strong><font color="4444FF">(</font><font color="#FF0000">0</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <strong>else</strong>
+    <strong>return</strong><font color="4444FF">(</font><font color="#FF0000">1</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+
+<font color="#444444">/*+++++++++++++++++++++++++++++++++++++++++++++++++++
+Description: Get AGWPE data out of the ringbuffer
+++++++++++++++++++++++++++++++++++++++++++++++++++*/</font>
+<strong>int</strong> 
+<font color="#2040a0">agwdata_get</font><font color="4444FF">(</font><font color="#2040a0">RINGBUF</font> <font color="4444FF">*</font><font color="#2040a0">buf</font>,	<font color="#444444">/*+ Pointer to the rignbuffer +*/</font>
+			<font color="#2040a0">size_t</font>  <font color="#2040a0">cnt</font>, 	<font color="#444444">/*+ Number of bytes to get out of buffer +*/</font>
+		    <font color="#2040a0">BYTE</font> <font color="4444FF">*</font><font color="#2040a0">d</font><font color="4444FF">)</font>	    <font color="#444444">/*+ Pointer to buffer to store the data in +*/</font>
+<font color="#444444">/*+ Returns 1 on success, 0 if no data was available +*/</font>
+<font color="4444FF"><strong>{</strong></font>
+  <strong>int</strong> <font color="#2040a0">i</font><font color="4444FF">;</font>
+  <font color="#2040a0">BYTE</font> <font color="#2040a0">c</font><font color="4444FF">;</font>
+												 
+  <font color="#444444">/*--- Check if there is a header available  ---*/</font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">ringbuf_cnt</font><font color="4444FF">(</font><font color="#2040a0">buf</font><font color="4444FF">)</font> <font color="4444FF">&lt;</font> <font color="#2040a0">cnt</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">perror</font><font color="4444FF">(</font><font color="#008000">&quot;agwdata_get() Less then requested bytes in ringbuf&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font> 
+    <strong>return</strong><font color="4444FF">(</font><font color="#FF0000">0</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">=</font><font color="#FF0000">0</font> <font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="4444FF">(</font><strong>int</strong><font color="4444FF">)</font><font color="#2040a0">cnt</font> <font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="4444FF">(</font><strong>void</strong><font color="4444FF">)</font> <font color="#2040a0">ringbuf_get</font><font color="4444FF">(</font><font color="#2040a0">buf</font>,<font color="4444FF">&amp;</font><font color="#2040a0">c</font><font color="4444FF">)</font><font color="4444FF">;</font>  
+	<font color="#2040a0">d</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">c</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <strong>return</strong><font color="4444FF">(</font><font color="4444FF">(</font><strong>int</strong><font color="4444FF">)</font><font color="#2040a0">cnt</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+
+
+
+</pre>
+<hr>
+syntax highlighted by <a href="http://www.cosy.sbg.ac.at/~ppalfrad/code2html">Code2HTML</a>, v. 0.8.11
+</body>
+</html>
